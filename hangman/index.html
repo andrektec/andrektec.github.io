@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- All my mistakes are intentional -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <script>
+        String.prototype.replaceAt = function (index, replacement) {
+            return this.substring(0, index) + replacement + this.substring(index + replacement.length);
+        }
+    </script>
+</head>
+
+<body style="background: black; color: white; margin: 0; font-family: 'Courier New', monospace;">
+    <div style="
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        height: 100vh;
+    ">
+        <div>
+            <input style="
+                font-family: 'Courier New', monospace;
+                letter-spacing: 1em;
+                background: none;
+                border: none;
+                outline: none;
+                color: white;
+                font-size: 4em;
+                width: 80vw;
+                height: 90vh;
+                text-align: center;
+                text-transform: lowercase;
+            " type="text" spellcheck="false" autofocus>
+            <span style="
+            letter-spacing: 1em;
+            position: absolute;
+            top:60vh;
+            width: 80vw;
+            left: 10vw;
+            text-align: center;
+            font-size: 1.5em;
+            "></span>
+        </div>
+    </div>
+    <script>
+        const alphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+        const inputElement = document.querySelector("input");
+        const spanElement = document.querySelector("span");
+        let answer = ""
+        let wrongs = ""
+        let interval
+
+        function inputHandler(event) {
+            event.target.value = event.target.value.toLowerCase()
+            wrongs = ""
+            spanElement.innerText = wrongs
+            clearInterval(interval);
+
+            const value = event.target.value;
+            if (answer.length < value.length) { answer += value.slice(-1).replace(/[^a-z ]+/g, ''); }
+            else { answer = answer.slice(0, -1) }
+            let result = ""
+            for (let i = 0; i < answer.length; i++) {
+                if (answer[i] === " ") result += " "
+                else result += "_";
+            }
+            event.target.value = result;
+        }
+        inputElement.addEventListener("input", inputHandler);
+        inputElement.addEventListener("propertychange", inputHandler);
+
+        inputElement.addEventListener('keypress', (e) => {
+            if (e.key === "Enter") {
+                if (answer.includes(" ") && !inputElement.value.includes(" ")) {
+                    let indexOccurence = answer.indexOf(" ", 0);
+
+                    while (indexOccurence >= 0) {
+                        inputElement.value = inputElement.value.replaceAt(indexOccurence, " ");
+
+                        indexOccurence = answer.indexOf(" ", indexOccurence + 1);
+                    }
+                }
+
+                interval = setInterval(function () {
+                    if (inputElement.value === answer) { clearInterval(interval); }
+                    nextTurn();
+                }, 100);
+            }
+        });
+
+        function nextTurn() {
+            if (answer !== inputElement.value) {
+                let rand = Math.floor(Math.random() * 26);
+                while (wrongs.includes(alphabet[rand]) || inputElement.value.includes(alphabet[rand])) {
+                    rand = Math.floor(Math.random() * 26);
+                }
+                if (answer.includes(alphabet[rand]) && !inputElement.value.includes(alphabet[rand])) {
+                    let indexOccurence = answer.indexOf(alphabet[rand], 0);
+
+                    while (indexOccurence >= 0) {
+                        inputElement.value = inputElement.value.replaceAt(indexOccurence, alphabet[rand]);
+
+                        indexOccurence = answer.indexOf(alphabet[rand], indexOccurence + 1);
+                    }
+                }
+                if (!answer.includes(alphabet[rand])) { wrongs += alphabet[rand] }
+                spanElement.innerText = wrongs
+            }
+        }
+    </script>
+</body>
+
+</html>
